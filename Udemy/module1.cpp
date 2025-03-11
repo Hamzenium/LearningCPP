@@ -1,47 +1,36 @@
 #include <iostream>
+#include <pthread.h>
 #include <string>
-#include <thread>
-#include <mutex>
-#include <chrono>
 
 using namespace std;
 
-mutex cout_mutex; // Mutex for thread-safe output
+const int nplayers = 4;
+const int max_number = 30;
+string player_names[] = {"Abdul", "Bart", "Claudia", "Divya"};
 
-void playFizzBuzz(int n) {
-    string players[4] = {"Abdul", "Bart", "Claudia", "Divya"}; // Using an array instead of vector
-    int num_players = 4;
+void* speak(void*) {
+    for (int n = 1; n <= max_number; ++n) {
+        string player = player_names[(n - 1) % nplayers];
 
-    for (int i = 1; i <= n; ++i) {
-        string output;
+        cout << player << " says ";
 
-        if (i % 3 == 0 && i % 5 == 0) {
-            output = "fizzbuzz!";
-        } else if (i % 3 == 0) {
-            output = "fizz!";
-        } else if (i % 5 == 0) {
-            output = "buzz!";
+        if (n % 3 == 0 && n % 5 == 0) {
+            cout << "fizzbuzz!";
+        } else if (n % 3 == 0) {
+            cout << "fizz!";
+        } else if (n % 5 == 0) {
+            cout << "buzz!";
         } else {
-            output = to_string(i);
+            cout << n;
         }
-
-        {
-            lock_guard<mutex> lock(cout_mutex); // Ensures safe console output
-            cout << players[(i - 1) % num_players] << " says " << output << endl;
-        }
-
-        this_thread::sleep_for(chrono::milliseconds(200)); // Simulate real-time output
+        cout << endl;
     }
+    return NULL;
 }
 
 int main() {
-    int n = 20; // Number of turns
-
-    // Start the FizzBuzz function in a separate thread
-    thread fizzBuzzThread(playFizzBuzz, n);
-
-    // Wait for the thread to complete execution
-    fizzBuzzThread.join();
-
+    pthread_t game;
+    pthread_create(&game, NULL, speak, NULL);
+    pthread_join(game, NULL);
     return 0;
 }
